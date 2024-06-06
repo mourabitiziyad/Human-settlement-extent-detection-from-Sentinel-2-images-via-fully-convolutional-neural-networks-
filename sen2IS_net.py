@@ -88,7 +88,7 @@ def sen2IS_net_bn(input_size = (128,128,10), numC=2, ifBN=1, attentionS=0,  atte
     merge1 = sen2IS_net_bn_core(inputs, bn=ifBN)
     o = sen2IS_net_bn_core_2(merge1, dim=128, inc_rate=2, numC=numC, bn=ifBN, attentionS=attentionS,  attentionC=attentionC)
 
-    model = Model(input = inputs, output = o)
+    model = Model(inputs = inputs, outputs = o)
 
     return model
 
