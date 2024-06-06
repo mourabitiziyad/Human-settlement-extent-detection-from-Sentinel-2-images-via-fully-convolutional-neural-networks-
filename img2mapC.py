@@ -259,47 +259,40 @@ class img2mapC(object):
 
         imgN = len(file)
 
-        if self.dim_x == 32:
-            paddList = [0, 8, 16, 24]
-        if self.dim_x == 64:
-            paddList = [0, 16, 32, 48]
-        else:
-            paddList = [0, 32, 64, 96]
+        paddList = [0, 32, 64, 96]
 
         for padding in paddList:
 
             # prepare x_test
             # if imgN==1:
+            print("prev shape", img.shape)
             if padding == 0:
                 img1 = img
             else:
                 img1 = np.pad(
                     img, ((padding, 0), (padding, 0), (0, 0)), 'reflect')
-            print(img1.shape)
+            print("now shape", img1.shape)
             x_test, mapR, mapC = self.Bands2patches_all(img1, 1)
             print('x_test:', x_test.shape)
 
             if out == 1:
-
-                if nn == 18 or nn == 16:
-                    y = model.predict([x_test[:, :, :, 0], x_test[:, :, :, 1], x_test[:, :, :, 2], x_test[:, :, :, 3], x_test[:, :, :, 4],
-                                      x_test[:, :, :, 5], x_test[:, :, :, 6], x_test[:, :, :, 7], x_test[:, :, :, 8], x_test[:, :, :, 9]], batch_size=16, verbose=1)
-                elif nn == 24 or nn == 25:  # [1,2,3,7]], X[:,:,:,[0,4,5,6,8,9]
-                    y = model.predict(
-                        [x_test[:, :, :, [1, 2, 3, 7]], x_test[:, :, :, [0, 4, 5, 6, 8, 9]]])
-                else:
-                    y = model.predict(x_test, batch_size=16, verbose=1)
+                
+                y = model.predict(x_test, batch_size=16, verbose=1)
 
                 C, mapPatch_shape = self.pro_from_x(mapR, mapC, y, padding)
+                print('C:', C.shape)
+                print('mapPatch_shape:', mapPatch_shape)
                 # ratio between the input and the output
-                OS = np.int64(self.dim_x / mapPatch_shape)
+                OS = int(self.dim_x / mapPatch_shape)
                 if padding == 0:
                     r = C.shape[0]
                     c = C.shape[1]
                     Pro = C[0:(r-mapPatch_shape), 0:(c-mapPatch_shape), :]
                 else:
-                    Pro = Pro+C[np.int64(padding/OS):(r-mapPatch_shape+np.int64(padding/OS)), np.int64(
-                        padding/OS):(c-mapPatch_shape+np.int64(padding/OS)), :]
+                    Pro = Pro+C[int(padding/OS):(r-mapPatch_shape+int(padding/OS)), int(
+                        padding/OS):(c-mapPatch_shape+int(padding/OS)), :]
+        
+        print('Pro:', Pro.shape)
 
         if out == 1:
             self.save_pre_pro(prj, trans, Pro, mapFile, mapPatch_shape)
